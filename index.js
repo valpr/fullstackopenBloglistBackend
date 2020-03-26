@@ -1,3 +1,4 @@
+require('dotenv').config()
 const http = require('http')
 const express = require('express')
 const app = express()
@@ -13,18 +14,19 @@ const blogSchema = mongoose.Schema({
 
 const Blog = mongoose.model('Blog', blogSchema)
 
-const mongoUrl = 'mongodb://localhost/bloglist'
+const mongoUrl = process.env.mongoUrl
+console.log(process.env.mongoUrl)
 mongoose.connect(mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true })
 
 app.use(cors())
 app.use(express.json())
 
-app.get('/api/blogs', (request, response) => {
+app.get('/api/blogs', (request, response ) => {
   Blog
     .find({})
     .then(blogs => {
       response.json(blogs)
-    })
+    }).catch(error => console.log(error))
 })
 
 app.post('/api/blogs', (request, response) => {
