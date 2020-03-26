@@ -4,16 +4,7 @@ const app = express()
 const cors = require('cors')
 const mongoose = require('mongoose')
 const config = require('./utils/config')
-
-const blogSchema = mongoose.Schema({
-  title: String,
-  author: String,
-  url: String,
-  likes: Number
-})
-
-const Blog = mongoose.model('Blog', blogSchema)
-
+const blogModel = require('./models/blog')
 
 mongoose.connect(config.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
 
@@ -21,7 +12,7 @@ app.use(cors())
 app.use(express.json())
 
 app.get('/api/blogs', (request, response ) => {
-  Blog
+  blogModel
     .find({})
     .then(blogs => {
       response.json(blogs)
@@ -29,8 +20,7 @@ app.get('/api/blogs', (request, response ) => {
 })
 
 app.post('/api/blogs', (request, response) => {
-  const blog = new Blog(request.body)
-
+  const blog = new blogModel(request.body)
   blog
     .save()
     .then(result => {
