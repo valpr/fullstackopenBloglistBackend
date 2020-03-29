@@ -3,20 +3,30 @@ const blogModel = require('../models/blog')
 
 //blogsRouter handles all GET/POST requests
 
-blogsRouter.get('/', (request, response, next ) => {
-    blogModel
-      .find({})
-      .then(blogs => {
-        response.json(blogs)
-      }).catch (error => next(error))
-  })
+blogsRouter.get('/', async (request, response) => {
+  const blogs = await blogModel.find({})
+  response.json(blogs)
+})
   
-  blogsRouter.post('/', (request, response, next) => {
+blogsRouter.post('/', async (request, response) => {
     const blog = new blogModel(request.body)
-    blog
-      .save()
-      .then(result => {
-        response.status(201).json(result)
-      }).catch (error => next(error))
-  })
+    if (!blog.title || !blog.url)
+      response.status(400).json({error: "No title or URL"})
+    else{
+      const result = await blog.save()
+      response.status(201).json(result)
+    }
+})
+
+blogsRouter.delete('/:id', async(request, response) => {
+  await blogModel.findByIdAndRemove(request.params.id)
+  response.status(204).end()
+})
+
+
+blogsRouter.put('/:id', async(request, response) => {
+  const updatedBlog = await blogModel.findByIdAndUpdate(request.params.id, request.body, {new:true})
+  response.status(200).json(updatedBlog)
+})
+
 module.exports = blogsRouter
