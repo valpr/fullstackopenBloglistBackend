@@ -4,18 +4,18 @@ const supertest = require('supertest')
 const app = require('../app')
 
 const api = supertest(app)
-
 const Blog = require('../models/blog')
 
+
 const initialBlogs = [
-    
         {
           _id: "5a422a851b54a676234d17f7",
           title: "React patterns",
           author: "Michael Chan",
           url: "https://reactpatterns.com/",
           likes: 7,
-          __v: 0
+          __v: 0,
+          user:"5e82bb4fe8679043f09c6191"
         },
         {
           _id: "5a422aa71b54a676234d17f8",
@@ -23,7 +23,8 @@ const initialBlogs = [
           author: "Edsger W. Dijkstra",
           url: "http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html",
           likes: 5,
-          __v: 0
+          __v: 0,
+          user:"5e82376c725c9720a491a839"
         },
         {
           _id: "5a422b3a1b54a676234d17f9",
@@ -60,12 +61,15 @@ const initialBlogs = [
       
 ]
 
+
+
 beforeEach(async () => {
     await Blog.deleteMany({})
-    
+
     const blogObjects =initialBlogs.map(blog => new Blog(blog))
     const promiseArray = blogObjects.map(blog => blog.save())
     await Promise.all(promiseArray)
+
 })
 
 test('get all blogs', async () => {
@@ -78,6 +82,28 @@ test('unique identifier property', async () =>{
     expect(response.body[0].id).toBeDefined()
 })
 
+test('test login', async ()  => {
+    const createUser = {
+        "username":"mluk",
+        "password":"mluk",
+        "name":"mluk"
+    }
+    await api.post('/api/users')
+        .send(createUser)
+        .expect(200)
+
+    const user = {
+        "username":"mluk",
+        "password":"mluk"
+    }
+    const response = await api.post('/api/login')
+        .send(user)
+        .expect(200)
+    
+    console.log(response.body)
+    
+})
+
 test('create new blog', async () => {
     const before = await api.get('/api/blogs')
     const blogToAdd = new Blog({
@@ -86,12 +112,53 @@ test('create new blog', async () => {
         url: "mememememe.com",
         likes: 1,
     })
-    await blogToAdd.save()
+
+    const userToUse = {
+        "username": "mluk",
+        "password": "mluk"
+    }
+    const res = await api.post('/api/login')
+        .send(userToUse)
+        .expect(200)
+
+
+
+    await api.post('/api/blogs')
+        .send(blogToAdd)
+        .set('Authorization', `bearer ${res.body.token}`)
+        .expect(204)
     const after = await api.get('/api/blogs')
     expect(after.body.length).toBe(before.body.length+1)
 })
 
-test('likes missing', async ()=>{
+test('token not provided delete', async () => {
+    const before = await api.get('/api/blogs')
+
+    await api.delete(`/api/blogs/${before.body[0].id}`)
+    .expect(401)
+})
+
+test('delete new blog', async () => {
+    const before = await api.get('/api/blogs')
+
+
+    const userToUse = {
+        "username": "mluk",
+        "password": "mluk"
+    }
+    const res = await api.post('/api/login')
+        .send(userToUse)
+        .expect(200)
+    
+    await api.delete(`/api/blogs/${before.body[0].id}`)
+        .set('Authorization', `bearer ${res.body.token}`)
+        .expect(204)
+
+    const after = await api.get('/api/blogs')
+    expect(after.body.length).toBe(before.body.length-1)
+})
+
+test('likes missing defaults 0', async ()=>{
     const before = await api.get('/api/blogs')
     const blogToAdd = new Blog({
         title: "my blog",
@@ -116,16 +183,6 @@ test('title and url missing', async () =>{
     expect(notesAtEnd.body.length).toBe(initialBlogs.length)
 })
 
-test('delete by ID', async () => {
-    const before = await api.get('/api/blogs')
-
-    await api
-        .delete(`/api/blogs/${before.body[0].id}`)
-        .expect(204)
-    const after = await api.get('/api/blogs')
-    expect(after.body.length).toBe(before.body.length-1)
-
-})
 
 test('update by ID', async () => {
     const before = await api.get('/api/blogs')
@@ -142,6 +199,6 @@ test('update by ID', async () => {
     expect(extraLike.likes).toBe(changed.likes)
 })
 
-afterAll(async () =>{
+afterAll(() =>{
     mongoose.connection.close()
 })

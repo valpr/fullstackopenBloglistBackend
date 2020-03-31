@@ -1,0 +1,10 @@
+POST http://localhost:3003/api/blogs/
+Content-Type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im1sdWsiLCJpZCI6IjVlODIzNzZjNzI1Yzk3MjBhNDkxYTgzOSIsImlhdCI6MTU4NTU5ODc1OH0.Pel1W3ALTBZst-50TRWUe7mbs-oXtffueNEbBFTHnJ8
+
+{
+    "title": "original",
+    "author": "author",
+    "url": "donotsteal.com",
+    "likes":"55"
+}
