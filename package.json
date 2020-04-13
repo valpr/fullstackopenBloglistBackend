@@ -4,9 +4,10 @@
   "description": "fso bloglist",
   "main": "index.js",
   "scripts": {
-    "start": "cross-env NODE_ENV = production node indexjs",
+    "start": "cross-env NODE_ENV=production node index.js",
     "dev": "cross-env NODE_ENV=development nodemon index.js",
-    "test": "cross-env NODE_ENV=test jest --verbose --runInBand"
+    "test": "cross-env NODE_ENV=test jest --verbose --runInBand",
+    "start:test": "cross-env NODE_ENV=test node index.js"
   },
   "keywords": [
     "fso"
@@ -14,6 +15,7 @@
   "author": "Andrew Fong",
   "license": "MIT",
   "devDependencies": {
+    "cypress": "^4.3.0",
     "dotenv": "^8.2.0",
     "jest": "^25.2.3",
     "nodemon": "^2.0.2",
