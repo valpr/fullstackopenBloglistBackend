@@ -35,6 +35,14 @@ blogsRouter.post('/', async (request, response) => {
   }
 })
 
+blogsRouter.post('/:id/comments', async (request, response) => {
+  const updatedBlog = await blogModel
+  .findByIdAndUpdate(request.params.id, request.body, {new:true})
+    .populate('user', {name: 1, username: 1})
+    response.status(200).json(updatedBlog)
+
+})
+
 blogsRouter.delete('/:id', async(request, response) => {
   const decodedToken = jwt.verify(request.token, process.env.SECRET)
   if(!request.token || !decodedToken.id) {
